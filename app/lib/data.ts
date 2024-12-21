@@ -15,6 +15,7 @@ const client = await db.connect();
 
 export async function fetchRevenue() {
   try {
+    const client = await db.connect();
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
     //
@@ -26,7 +27,7 @@ export async function fetchRevenue() {
           FROM revenue
           `;
 
-    //
+
     // console.log('Data fetch completed after 3 seconds.');
 
     return data.rows;
@@ -37,6 +38,8 @@ export async function fetchRevenue() {
 }
 
 export async function fetchLatestInvoices() {
+
+  const client = await db.connect();
   try {
     const data = await client.sql<LatestInvoiceRaw>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
@@ -57,13 +60,15 @@ export async function fetchLatestInvoices() {
 }
 
 export async function fetchCardData() {
+
+  const client = await db.connect();
   try {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
+    const invoiceCountPromise = client.sql`SELECT COUNT(*) FROM invoices`;
+    const customerCountPromise = client.sql`SELECT COUNT(*) FROM customers`;
+    const invoiceStatusPromise = client.sql`SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
@@ -128,8 +133,10 @@ export async function fetchFilteredInvoices(
 }
 
 export async function fetchInvoicesPages(query: string) {
+
+  const client = await db.connect();
   try {
-    const count = await sql`SELECT COUNT(*)
+    const count = await client.sql`SELECT COUNT(*)
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
@@ -149,8 +156,10 @@ export async function fetchInvoicesPages(query: string) {
 }
 
 export async function fetchInvoiceById(id: string) {
+
+  const client = await db.connect();
   try {
-    const data = await sql<InvoiceForm>`
+    const data = await client.sql<InvoiceForm>`
       SELECT
         invoices.id,
         invoices.customer_id,
@@ -174,8 +183,10 @@ export async function fetchInvoiceById(id: string) {
 }
 
 export async function fetchCustomers() {
+
+  const client = await db.connect();
   try {
-    const data = await sql<CustomerField>`
+    const data = await client.sql<CustomerField>`
       SELECT
         id,
         name
@@ -192,8 +203,10 @@ export async function fetchCustomers() {
 }
 
 export async function fetchFilteredCustomers(query: string) {
+
+  const client = await db.connect();
   try {
-    const data = await sql<CustomersTableType>`
+    const data = await client.sql<CustomersTableType>`
 		SELECT
 		  customers.id,
 		  customers.name,
